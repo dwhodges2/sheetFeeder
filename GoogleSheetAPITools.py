@@ -26,10 +26,6 @@ def main():
 
     #pprint(sheetAppend(test_sheet,test_range,[[5,"ee", 'xx'],[6,"f"],[7,"g"]] ))
     #pprint(getSheetData(test_sheet,test_range))
-
-    #pprint(batchGetByDataFilter(test_sheet,['b']))
-
-    quit()
  
 
 
@@ -38,15 +34,12 @@ def getSheetData(sheet,range):
     service = googleAuth()
     spreadsheet_id = sheet
     range_ = range
-
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueRenderOption
     value_render_option = 'FORMATTED_VALUE'
     # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
     date_time_render_option = 'SERIAL_NUMBER' 
-
     request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option, dateTimeRenderOption=date_time_render_option)
     response = request.execute()
-
     return response
 
 
@@ -55,19 +48,14 @@ def sheetAppend(sheet,range,data):
     # Append rows to end of detected table. 
     # Note: the range is only used to identify a table; values will be appended at the end of table, not at end of range.
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
-
     service = googleAuth()
     spreadsheet_id = sheet
     range_ = range 
-
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
     value_input_option = 'USER_ENTERED'
-
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
     insert_data_option = 'OVERWRITE'
-
     value_range_body = {'values': data}
-
     request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
     response = request.execute()
 
@@ -99,16 +87,13 @@ def sheetLookup(sheet,range,search_str,col_search,col_result):
 
 def batchGetByDataFilter(sheet,datafilters):
     # TODO: Doesn't work. Make this work!
-
     service = googleAuth()
     spreadsheet_id = sheet
 
     batch_get_values_by_data_filter_request_body = {
     'value_render_option': 'FORMATTED_VALUE', 
     'data_filters': datafilters, 
-
     'date_time_render_option': 'SERIAL_NUMBER'  
-
     # TODO: Add desired entries to the request body.
     }
 
@@ -121,6 +106,7 @@ def batchGetByDataFilter(sheet,datafilters):
 
 
 def googleAuth():
+    # General function to authenticate
     store = file.Storage('token.json')
     creds = store.get()
     if not creds or creds.invalid:
