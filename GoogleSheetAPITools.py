@@ -5,7 +5,6 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 from pprint import pprint
 import json
-import secrets
 
 
 # If modifying these scopes, delete the file token.json.
@@ -13,20 +12,11 @@ import secrets
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
 
-# The ID and range of a sample spreadsheet.
-test_sheet = secrets.default_sheet
-test_range = secrets.default_range
-
-
 
 def main():
+    
+    quit()
 
-#    print(sheetLookup(test_sheet,test_range,"b",1,0))
-    print(sheetLookup(test_sheet,test_range,'4492444',2,3)[0][0])
-
-    #pprint(sheetAppend(test_sheet,test_range,[[5,"ee", 'xx'],[6,"f"],[7,"g"]] ))
-    #pprint(getSheetData(test_sheet,test_range))
- 
 
 
 def getSheetData(sheet,range):
@@ -41,6 +31,19 @@ def getSheetData(sheet,range):
     request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option, dateTimeRenderOption=date_time_render_option)
     response = request.execute()
     return response
+
+
+def sheetClear(sheet,range):
+    service = googleAuth()
+    spreadsheet_id = sheet
+    range_ = range
+    clear_values_request_body = {
+    # TODO: Add desired entries to the request body.
+    }
+    request = service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id, range=range_, body=clear_values_request_body)
+    response = request.execute()
+    return response
+
 
 
 
