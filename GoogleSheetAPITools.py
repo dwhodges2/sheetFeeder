@@ -2,7 +2,6 @@ from googleapiclient import discovery
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
-from pprint import pprint
 import json
 import re
 
@@ -12,11 +11,52 @@ import re
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
 
+# Classes and Methods
+
+class dataSheet:
+    def __init__(self, id, range):
+        self.id = id
+        self.range = range
+        self.initInfo = getSheetInfo(id)
+        self.initTabs = getSheetTabs(id)
+        self.initData = getSheetData(id,range)
+
+    def clear(self):
+        sheetClear(self.id, self.range)
+
+    def getData(self):
+        return getSheetData(self.id,self.range)
+
+    def getDataColumns(self):
+        return getSheetDataColumns(self.id,self.range)
+
+    def appendData(self, data):
+        return sheetAppend(self.id,self.range,data)
+
+    def lookup(self, search_str,col_search,col_result):
+        return sheetLookup(self.id,self.range,search_str,col_search,col_result)
+
+    def matchingRows(self,queries,regex=True,operator='or'):
+        return getMatchingRows(self.id,self.range,queries,regex=True,operator='or')
+
+    # TODO: add validation method.
+    # def validate(self,rule):
+    #     return sheetValidate(self.id,self.range,rule)
+
+
+
 def main():
 
-    # Test code here.
+    ## Test some code here if you like.
+    
+    # the_sheet = dataSheet('1YzM1dinagfoTUirAoA2hHBfnhSM1PsPt8TkwTT9KlgQ','Sheet1!A:Z')
+    # print(the_sheet.getData())
+    # x = the_sheet.matchingRows([['BIBID', '4079432'], ['Title', '.*Humph.*']])
+    # print(x)
+
 
     quit()
+
 
 
 def getSheetInfo(sheet):
@@ -54,7 +94,10 @@ def getSheetData(sheet,range):
     date_time_render_option = 'SERIAL_NUMBER' 
     request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option, dateTimeRenderOption=date_time_render_option)
     the_data = request.execute()
-    response = the_data["values"]
+    if "values" in the_data:
+        response = the_data["values"]
+    else:
+        response = []
     return response
 
 
@@ -68,8 +111,6 @@ def sheetClear(sheet,range):
     request = service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id, range=range_, body=clear_values_request_body)
     response = request.execute()
     return response
-
-
 
 
 def sheetAppend(sheet,range,data):
@@ -87,8 +128,7 @@ def sheetAppend(sheet,range,data):
     request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
     response = request.execute()
 
-    # TODO: Change code below to process the `response` dict:
-    #pprint(response)
+    return response
 
 
 
@@ -129,12 +169,12 @@ def batchGetByDataFilter(sheet,datafilters):
     request = service.spreadsheets().values().batchGetByDataFilter(spreadsheetId=spreadsheet_id, body=batch_get_values_by_data_filter_request_body)
     response = request.execute()
 
-    # TODO: Change code below to process the `response` dict:
     return response
 
 
 def getMatchingRows(sheet,range,queries, regex=True, operator='or'):
     # Return a list of rows for which at least one queried column matches regex query. Assumes the first row contains heads.
+    # Queries are pairs of column heads and matching strings, e.g., [['ID','123'],['Author','Yeats']]. They are regex by default and can be joined by either 'and' or 'or' logic.
 
     the_data = getSheetData(sheet,range)
     # use first row as heads
@@ -142,7 +182,7 @@ def getMatchingRows(sheet,range,queries, regex=True, operator='or'):
 
     the_results = []
 
-    # generate combined query/target pairs to evaluate in rows.
+    # Generate combined query/target pairs to evaluate in rows.
     # Will look like [ [ query_str1, [col_a,col_b] ], [ query_str2, [col_c,col_d] ] ]
     the_query_pairs = []
     for q in queries:
