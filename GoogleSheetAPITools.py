@@ -4,11 +4,19 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import json
 import re
+import os.path
 
 
 # If modifying these scopes, delete the file token.json.
 # SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
+
+
+# Credentials
+my_path = os.path.dirname(__file__)
+CREDENTIALS = os.path.join(my_path, 'credentials.json')
+TOKEN = os.path.join(my_path, 'token.json')
+
 
 
 # Classes and Methods
@@ -19,7 +27,7 @@ class dataSheet:
         self.range = range
         self.initInfo = getSheetInfo(id)
         self.initTabs = getSheetTabs(id)
-        self.initData = getSheetData(id,range)
+        # self.initData = getSheetData(id,range)
 
     def clear(self):
         sheetClear(self.id, self.range)
@@ -49,11 +57,11 @@ def main():
 
     ## Test some code here if you like.
     
-    # the_sheet = dataSheet('1YzM1dinagfoTUirAoA2hHBfnhSM1PsPt8TkwTT9KlgQ','Sheet1!A:Z')
+    the_sheet = dataSheet('d1YzM1dinagfoTUirAoA2hHBfnhSM1PsPt8TkwTT9KlgQ','Sheet1!A:Z')
     # print(the_sheet.getData())
+    print(the_sheet.getDataColumns())
     # x = the_sheet.matchingRows([['BIBID', '4079432'], ['Title', '.*Humph.*']])
     # print(x)
-
 
     quit()
 
@@ -84,7 +92,7 @@ def getSheetTabs(sheet):
 
 
 def getSheetData(sheet,range):
-
+    # Return sheet data as list of rows.
     service = googleAuth()
     spreadsheet_id = sheet
     range_ = range
@@ -93,6 +101,25 @@ def getSheetData(sheet,range):
     # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
     date_time_render_option = 'SERIAL_NUMBER' 
     request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option, dateTimeRenderOption=date_time_render_option)
+    the_data = request.execute()
+    if "values" in the_data:
+        response = the_data["values"]
+    else:
+        response = []
+    return response
+
+
+def getSheetDataColumns(sheet,range):
+    # Return sheet data in columns instead of rows.
+    service = googleAuth()
+    spreadsheet_id = sheet
+    range_ = range
+    # https://developers.google.com/sheets/api/reference/rest/v4/ValueRenderOption
+    value_render_option = 'FORMATTED_VALUE'
+    # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
+    date_time_render_option = 'SERIAL_NUMBER' 
+    major_dimension = 'COLUMNS'
+    request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_, valueRenderOption=value_render_option, majorDimension=major_dimension, dateTimeRenderOption=date_time_render_option)
     the_data = request.execute()
     if "values" in the_data:
         response = the_data["values"]
@@ -246,10 +273,10 @@ def getMatchingRows(sheet,range,queries, regex=True, operator='or'):
 
 def googleAuth():
     # General function to authenticate
-    store = file.Storage('token.json')
+    store = file.Storage(TOKEN)
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+        flow = client.flow_from_clientsecrets(CREDENTIALS, SCOPES)
         creds = tools.run_flow(flow, store)
 
     service = build('sheets', 'v4', http=creds.authorize(Http()))
