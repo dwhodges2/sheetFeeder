@@ -1,4 +1,4 @@
-from GoogleSheetAPITools import dataSheet
+from sheetFeeder import dataSheet
 
 
 my_sheet = dataSheet('1YzM1diaFchenQnchemgogyU2menGxv5Gme','Sheet1!A:Z')

@@ -1,4 +1,5 @@
-# googlesheet_tools
+# sheetFeeder
+_(Formerly googlesheet_tools, GoogleSheetAPITools)_
 
 Basic Python functions for operations on a Google Sheet. See https://developers.google.com/sheets/api/quickstart/python for inital setup.
 
@@ -17,7 +18,11 @@ Basic Python functions for operations on a Google Sheet. See https://developers.
 
 The core class is dataSheet(id,range). Define a dataSheet to operate on using the id string of a Google Sheet (the long string between "https://docs.google.com/spreadsheets/d/" and "/edit#gid=0" or the like), and a range including a tab name. Example:
 
-    my_sheet = dataSheet('1YzM1diaFchenQnchemgogyU2menGxv5Gme','Sheet1!A:Z')
+```python
+from sheetFeeder import dataSheet
+
+my_sheet = dataSheet('1YzM1diaFchenQnchemgogyU2menGxv5Gme','Sheet1!A:Z')
+```
 
 This enables several methods on the dataSheet class:
 
