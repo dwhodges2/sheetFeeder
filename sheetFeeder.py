@@ -5,6 +5,7 @@ from oauth2client import file, client, tools
 import json
 import re
 import os.path
+import csv
 
 
 # If modifying these scopes, delete the file token.json.
@@ -46,6 +47,9 @@ class dataSheet:
 
     def matchingRows(self,queries,regex=True,operator='or'):
         return getMatchingRows(self.id,self.range,queries,regex=True,operator='or')
+
+    def importCSV(self,csv,delim=','):
+        return sheetImportCSV(self.id,self.range,csv,delim)
 
     # TODO: add validation method.
     # def validate(self,rule):
@@ -179,6 +183,29 @@ def sheetLookup(sheet,range,search_str,col_search,col_result):
                 theResultSet.append(aRow[y]) 
             theResults.append(theResultSet)   
     return theResults
+
+
+def sheetImportCSV(sheet,range,a_csv,delim=","):
+    # Note: will clear contents of sheet range first.
+    sheetClear(sheet,range)
+
+    service = googleAuth()
+    spreadsheet_id = sheet
+    range_ = range 
+    data = []
+    the_csv_data = open(a_csv)
+    for row in csv.reader(the_csv_data, delimiter=delim):
+        data.append(row)
+    the_csv_data.close()
+    # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
+    value_input_option = 'USER_ENTERED'
+    # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
+    insert_data_option = 'OVERWRITE'
+    value_range_body = {'values': data}
+    request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
+    response = request.execute()
+
+    return response
 
 
 def batchGetByDataFilter(sheet,datafilters):
