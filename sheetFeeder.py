@@ -48,8 +48,8 @@ class dataSheet:
     def matchingRows(self,queries,regex=True,operator='or'):
         return getMatchingRows(self.id,self.range,queries,regex=True,operator='or')
 
-    def importCSV(self,csv,delim=','):
-        return sheetImportCSV(self.id,self.range,csv,delim)
+    def importCSV(self,csv,delim=',',quote='NONE'):
+        return sheetImportCSV(self.id,self.range,csv,delim,quote)
 
     # TODO: add validation method.
     # def validate(self,rule):
@@ -185,18 +185,35 @@ def sheetLookup(sheet,range,search_str,col_search,col_result):
     return theResults
 
 
-def sheetImportCSV(sheet,range,a_csv,delim=","):
+def sheetImportCSV(sheet,range,a_csv,delim=',',quote='NONE'):
     # Note: will clear contents of sheet range first.
+    #  delim (optional): comma by default, can be pipe, colon, etc.
+    #  quote (optional): NONE by default. Can be:
+    #       ALL, MINIMAL, NONNUMERIC, NONE
     sheetClear(sheet,range)
 
     service = googleAuth()
     spreadsheet_id = sheet
     range_ = range 
+
+    # Process optional quote handling instruction.
+    if quote=='ALL':
+        quote_param=csv.QUOTE_ALL
+    elif quote=='MINIMAL':
+        quote_param=csv.QUOTE_MINIMAL
+    elif quote=='NONNUMERIC':
+        quote_param=csv.QUOTE_NONNUMERIC
+    else:
+        quote_param=csv.QUOTE_NONE
+
+    # TODO: Improve ability to pass parameters through to csv dialect options. See https://docs.python.org/3/library/csv.html
+    csv.register_dialect('my_dialect', delimiter=delim, quoting=quote_param)
+
     data = []
-    the_csv_data = open(a_csv)
-    for row in csv.reader(the_csv_data, delimiter=delim):
-        data.append(row)
-    the_csv_data.close()
+
+    with open(a_csv) as the_csv_data:
+        for row in csv.reader(the_csv_data, 'my_dialect'):
+            data.append(row)
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
     value_input_option = 'USER_ENTERED'
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
@@ -204,7 +221,6 @@ def sheetImportCSV(sheet,range,a_csv,delim=","):
     value_range_body = {'values': data}
     request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
     response = request.execute()
-
     return response
 
 
