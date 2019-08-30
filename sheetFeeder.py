@@ -28,7 +28,7 @@ class dataSheet:
         self.range = range
         self.initInfo = getSheetInfo(id)
         self.initTabs = getSheetTabs(id)
-        # self.initData = getSheetData(id,range)
+        self.url = getSheetURL(id,range)
 
     def clear(self):
         sheetClear(self.id, self.range)
@@ -131,6 +131,14 @@ def getSheetDataColumns(sheet,range):
         response = []
     return response
 
+def getSheetURL(sheet,range):
+    # Pull the title of tab from the range
+    tab_name = range.split('!')[0]
+    sheet_info = getSheetInfo(sheet)['sheets']
+    # Look for sheet matching name and get its ID
+    sheet_id = next( i['properties']['sheetId'] for i in sheet_info if i['properties']['title'] == tab_name )
+    the_url = 'https://docs.google.com/spreadsheets/d/' + str(sheet) + '/edit#gid=' + str(sheet_id)
+    return the_url
 
 def sheetClear(sheet,range):
     service = googleAuth()

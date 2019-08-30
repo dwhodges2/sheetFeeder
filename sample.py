@@ -7,4 +7,5 @@ x = my_sheet.getData()
 
 print(x)
 
+print('Go to ' + my_sheet.url + ' to see the data!')
 

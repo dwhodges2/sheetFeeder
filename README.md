@@ -36,8 +36,12 @@ This enables several methods on the dataSheet class:
 
 ### Additional Subclasses
 
+* `.id`: Returns id part of dataSheet 
+* `.range`: Returns range part of dataSheet 
 * `.initInfo`: Returns dictionary of metadata about sheet (all tabs, not just the one defined in 2nd arg of dataSheet).
 * `.initTabs`: Returns a list of names of tabs in spreadsheet.
+* `.url`: Returns public url of sheet of form https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid={tab_id}
+
 
 ## Sample Commands
 
