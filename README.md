@@ -1,20 +1,61 @@
 # sheetFeeder
 _(Formerly googlesheet_tools, GoogleSheetAPITools)_
 
-Basic Python functions for operations on a Google Sheet. See https://developers.google.com/sheets/api/quickstart/python for inital setup.
+Basic Python functions for operations on a Google Sheet. See https://developers.google.com/sheets/api/quickstart/python for more setup details. See API documentation: https://developers.google.com/sheets/api/reference/rest.
 
 ## Requirements
 
-* Python 3.
+* Python 3.4 or higher.
 * A Google Apps account.
-* Generated token.json and credentials.json files in project folder (see quickstart guide above).
-* Python packages installed in environment:
-  * googleapiclient (pip install --upgrade google-api-python-client)
-  * oauth2client (pip install oauth2client)
-  * httplib2 (pip install httplib2)
+* Generated `token.json` and `credentials.json` files in project folder (see quickstart instructions below).
+* Python packages:
+  * `requests`
+  * `googleapiclient`
+  * `oauth2client`
+  * `httplib2`
+
+## Setup
+
+### Python dependencies
+
+It is recommended to create a virtual Python environment (optional but recommended), to isolate project dependencies. See https://docs.python.org/3/library/venv.html.
+
+```python
+python3 -m venv sfvenv
+```
+
+Activate the virtual environment to which dependencies will be added:
+
+```python
+source sfvenv/bin/activate
+```
+
+(To deactivate later use command `deactivate`.)
+
+Dependencies to install into environment:
+
+* `pip install requests`
+* `pip install --upgrade google-api-python-client`
+* `pip install oauth2client`
+* `pip install lxml==4.3.4`
+
+(Note, can use current or other version of `lxml`; 4.3.4 is used for compatibility with Python 3.4.)
+
+### Enable Google Sheets API 
+
+* Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
+* Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json` and put it in the same folder with sheetFeeder.
+* Authenticate and grant access.
+  * Run `quickstart.py`.
+  * The first time you use the API you will be asked to select the Google identity to use (if more than one) and to verify access. Note that you may see a warning that the application is not verified by Google and could pose a security risk. You can go to the "advanced" option and proceed with the QuickStart authentication process from there.
+  * Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
+
+You should now have a file called `token.json` created in your directory. If you want to redo authentication, delete the file and run the script again. Any instance of sheetFeeder will need appropriate `credentials.json` and `token.json` files adjacent.
 
 
-## Classes and Methods
+## Using sheetFeeder
+
+### Classes and Methods
 
 The core class is dataSheet(id,range). Define a dataSheet to operate on using the id string of a Google Sheet (the long string between "https://docs.google.com/spreadsheets/d/" and "/edit#gid=0" or the like), and a range including a tab name. Example:
 
@@ -34,7 +75,7 @@ This enables several methods on the dataSheet class:
 * `.importCSV(csv_path,delim=)`: Import a CSV file into a designated sheet range, overwriting what is there. Delimeter is comma by default, but can be any character, e.g., pipe ('|').
 * `.matchingRows(self,queries,regex=True,operator='or')`: Return a list of rows for which at least one queried column matches regex query. Assumes the first row contains heads. Queries are pairs of column heads and matching strings, e.g., [['ID','123'],['Author','Yeats']]. They are regex by default and can be joined by either 'and' or 'or' logic.
 
-### Additional Subclasses
+#### Additional Subclasses
 
 * `.id`: Returns id part of dataSheet 
 * `.range`: Returns range part of dataSheet 
@@ -43,7 +84,7 @@ This enables several methods on the dataSheet class:
 * `.url`: Returns public url of sheet of form https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid={tab_id}
 
 
-## Sample Commands
+### Sample Commands
 
 * `my_sheet.getData()`
   * Result: [['head1', 'head2'],['a', 'b'],['one','two']]
@@ -62,4 +103,6 @@ This enables several methods on the dataSheet class:
 
 ## Notes
 
-This is a work in progress. 
+This is a work in progress. Comments/suggestions as well as forking very welcome. 
+
+TODO: Compile into package and register with PyPi for easier installation! 
