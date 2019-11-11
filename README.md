@@ -2,6 +2,7 @@
 _(Formerly googlesheet_tools, GoogleSheetAPITools)_
 
 Basic Python functions for operations on a Google Sheet. See https://developers.google.com/sheets/api/quickstart/python for more setup details. See API documentation: https://developers.google.com/sheets/api/reference/rest.
+This module has been heavily used in Columbia University Libraries' archival data migrations and other activites; a case study involving its use can be found in https://journal.code4lib.org/articles/14871.
 
 ## Requirements
 
@@ -20,13 +21,13 @@ Basic Python functions for operations on a Google Sheet. See https://developers.
 
 It is recommended to create a virtual Python environment (optional but recommended), to isolate project dependencies. See https://docs.python.org/3/library/venv.html.
 
-```python
+```
 python3 -m venv sfvenv
 ```
 
 Activate the virtual environment to which dependencies will be added:
 
-```python
+```
 source sfvenv/bin/activate
 ```
 
