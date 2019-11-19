@@ -8,7 +8,6 @@ This module has been heavily used in Columbia University Libraries' archival dat
 
 * Python 3.4 or higher.
 * A Google Apps account.
-* Generated `token.json` and `credentials.json` files in project folder (see quickstart instructions below).
 * Python packages:
   * `requests`
   * `google-api-client`
@@ -99,8 +98,8 @@ To establish connectivity to the API, repeat steps 4 and 6 above. The files `cre
 ├── credentials.json
 ├── sample.py
 ├── sheetFeeder.py
-└── token.json
-├── your_script.py
+├── token.json
+└── your_script.py
 ```
 
 ### Redoing authorization
