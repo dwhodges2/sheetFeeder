@@ -49,37 +49,37 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
 
 3. Install the `sheetFeeder` package into the virtual environment using `pip`:
 
-  ```bash
-  pip install sheetFeeder
-  ```
+    ```bash
+    pip install sheetFeeder
+    ```
 
-  NOTE: This installs several external dependency packages, versions of which you may need to manage in relation to the needs of your project:  
+    NOTE: This installs several external dependency packages, versions of which you may need to manage in relation to the needs of your project:  
 
- - `requests`
- - `google-api-python-client`
- - `oauth2client`
+    - `requests`
+    - `google-api-python-client`
+    - `oauth2client`
 
-  If you get an error saying "invalid command 'bdist_wheel'" you may need to install `wheel` (`pip install wheel`) and repeat.
+    If you get an error saying "invalid command 'bdist_wheel'" you may need to install `wheel` (`pip install wheel`) and repeat.
 
-  Your virtual environment may need additional packages installed of course, depending on your project.
+    Your virtual environment may need additional packages installed of course, depending on your project.
 
 4. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to `sheetFeeder`. 
 
-- Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
-- Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json`.
+    - Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
+    - Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json`.
 
 5. Place `credentials.json` in the `sheetFeeder` package folder within your virtual environment. The path may vary but it will be something like:
 
-  ```
-  sfvenv/lib/python3.6/site-packages/sheetFeeder/
-  ```
+    ```
+    sfvenv/lib/python3.6/site-packages/sheetFeeder/
+    ```
 
 6. Authenticate and authorize access to your Google account's API (Quickstart).
-- Run `sample.py` (`python sample.py`).
-- The first time you use the API you will be asked to select the Google identity to use (if more than one are active) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
-- Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
+    - Run `sample.py` (`python sample.py`).
+    - The first time you use the API you will be asked to select the Google identity to use (if more than one are active) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
+    - Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
 
-7. If successful, a `token.json` file will be created in the same folder as the credentials, and a brief readout of table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps. You can verify this by running `sample.py` again (you should just get the read-out, without the authentication steps). 
+7. If successful, a `token.json` file will be created in the same folder as the credentials, and a brief readout of table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps. You can verify this by running `sample.py` again (you should just get the read-out without the authentication steps). 
 
 (Note that `credentials.json` and `token.json` can be reused in other virtual environments that have `sheetFeeder` installed without repeating steps 4–7 above.)
 
