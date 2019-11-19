@@ -24,44 +24,44 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
 
 1. Create a scratch folder for setup in a convenient location:
 
-```bash
-mkdir sheetFeeder_setup
-cd sheetFeeder_setup
-```
+ ```bash
+ mkdir sheetFeeder_setup
+ cd sheetFeeder_setup
+ ```
 
-Download the `sample.py` file from the `sheetFeeder` GitHub and put it in this folder.
+ Download the `sample.py` file from the `sheetFeeder` GitHub and put it in this folder.
 
 2. Set up a virtual environment:
 
-NOTE: As `sheetFeeder` stores user-specific files for authentication, it is highly recommended to create a virtual Python environment for your project and install `sheetFeeder` and other dependencies into it. See https://docs.python.org/3/library/venv.html.
+ NOTE: As `sheetFeeder` stores user-specific files for authentication, it is highly recommended to create a virtual Python environment for your project and install `sheetFeeder` and other dependencies into it. See https://docs.python.org/3/library/venv.html.
 
-Create a new virtual environment in a convenient location with an appropriate name (here called "sfvenv" in the working directory—it can be at any location as long as you note the path for steps below):
+ Create a new virtual environment in a convenient location with an appropriate name (here called "sfvenv" in the working directory—it can be at any location as long as you note the path for steps below):
 
-```bash
-python3 -m venv sfvenv
-```
+ ```bash
+ python3 -m venv sfvenv
+ ```
 
-Activate the virtual environment to which dependencies will be added:
+ Activate the virtual environment to which dependencies will be added:
 
-```bash
-source sfvenv/bin/activate
-```
+ ```bash
+ source sfvenv/bin/activate
+ ```
 
 3. Install the `sheetFeeder` package into the virtual environment using `pip`:
 
-```bash
-pip install sheetFeeder
-```
+ ```bash
+ pip install sheetFeeder
+ ```
 
-NOTE: This installs several external dependency packages, versions of which you may need to manage in relation to the needs of your project:  
+ NOTE: This installs several external dependency packages, versions of which you may need to manage in relation to the needs of your project:  
 
  - `requests`
  - `google-api-python-client`
  - `oauth2client`
 
-If you get an error saying "invalid command 'bdist_wheel'" you may need to install `wheel` (`pip install wheel`) and repeat.
+ If you get an error saying "invalid command 'bdist_wheel'" you may need to install `wheel` (`pip install wheel`) and repeat.
 
-Your virtual environment may need additional packages installed of course, depending on your project.
+ Your virtual environment may need additional packages installed of course, depending on your project.
 
 4. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to `sheetFeeder`. 
 
@@ -70,9 +70,9 @@ Your virtual environment may need additional packages installed of course, depen
 
 5. Place `credentials.json` in the `sheetFeeder` package folder within your virtual environment. The path may vary but it will be something like:
 
-```
-sfvenv/lib/python3.6/site-packages/sheetFeeder/
-```
+ ```
+ sfvenv/lib/python3.6/site-packages/sheetFeeder/
+ ```
 
 6. Authenticate and authorize access to your Google account's API (Quickstart).
 - Run `sample.py` (`python sample.py`).
