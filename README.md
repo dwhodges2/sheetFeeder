@@ -24,28 +24,28 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
 
 1. Create a scratch folder for setup in a convenient location:
 
-  ```bash
-  mkdir sheetFeeder_setup
-  cd sheetFeeder_setup
-  ```
+    ```bash
+    mkdir sheetFeeder_setup
+    cd sheetFeeder_setup
+    ```
 
-  Download the `sample.py` file from the `sheetFeeder` GitHub and put it in this folder.
+    Download the `sample.py` file from the `sheetFeeder` GitHub and put it in this folder.
 
 2. Set up a virtual environment:
 
-  NOTE: As `sheetFeeder` stores user-specific files for authentication, it is highly recommended to create a virtual Python environment for your project and install `sheetFeeder` and other dependencies into it. See https://docs.python.org/3/library/venv.html.
+    NOTE: As `sheetFeeder` stores user-specific files for authentication, it is highly recommended to create a virtual Python environment for your project and install `sheetFeeder` and other dependencies into it. See https://docs.python.org/3/library/venv.html.
 
-  Create a new virtual environment in a convenient location with an appropriate name (here called "sfvenv" in the working directory—it can be at any location as long as you note the path for steps below):
+    Create a new virtual environment in a convenient location with an appropriate name (here called "sfvenv" in the working directory—it can be at any location as long as you note the path for steps below):
 
-  ```bash
-  python3 -m venv sfvenv
-  ```
+    ```bash
+    python3 -m venv sfvenv
+    ```
 
-  Activate the virtual environment to which dependencies will be added:
+    Activate the virtual environment to which dependencies will be added:
 
-  ```bash
-  source sfvenv/bin/activate
-  ```
+    ```bash
+    source sfvenv/bin/activate
+    ```
 
 3. Install the `sheetFeeder` package into the virtual environment using `pip`:
 
