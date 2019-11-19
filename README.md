@@ -28,7 +28,7 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
     cd sheetFeeder_setup
     ```
 
-    Download the `sample.py` file from the `sheetFeeder` GitHub and put it in this folder.
+    Download the [`sample.py`](https://github.com/dwhodges2/sheetFeeder/blob/master/sample.py) file from the `sheetFeeder` GitHub and put it in this folder.
 
 2. Set up a virtual environment:
 
