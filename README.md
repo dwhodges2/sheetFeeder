@@ -10,7 +10,7 @@ This module has been heavily used in Columbia University Libraries' archival dat
 * A Google Apps account.
 * Python packages:
   * `requests`
-  * `google-api-client`
+  * `google-api-python-client`
   * `oauth2client`
   * `httplib2`
 
@@ -18,93 +18,82 @@ This module has been heavily used in Columbia University Libraries' archival dat
 
 NEW: Now available as an [installable package from pypi.org](https://pypi.org/project/sheetFeeder/)!
 
-### Installing as a package
+1. Installation
 
+    There are several ways to use `sheetFeeder`, depending how you want to manage dependencies like authentication credentials. Three options are described here: system installation, installation in a virtual environment, and stand-alone module use. For testing and portability, the virtual-environment option is most recommended.
 
-1. Create a scratch folder for setup in a convenient location:
+    #### System installation
 
-    ```bash
-    mkdir sheetFeeder_setup
-    cd sheetFeeder_setup
+    To install into your default Python 3 environment, use the version of pip assocated with that environment (usually `pip3`).
+
+    ```
+    pip3 install sheetFeeder
     ```
 
-    Download the [`sample.py`](https://github.com/dwhodges2/sheetFeeder/blob/master/sample.py) file from the `sheetFeeder` GitHub and put it in this folder.
+    NOTE: You may need to prepend `sudo` to the avove to install at the system level. If you do not have su permissions to install Python packages, you may do better to use a virtual environment (see below).
 
-2. Set up a virtual environment:
+    You will need to note the location where the package is installed for step 2 below. It will be something like:
 
-    NOTE: As `sheetFeeder` stores user-specific files for authentication, it is highly recommended to create a virtual Python environment for your project and install `sheetFeeder` and other dependencies into it. See https://docs.python.org/3/library/venv.html.
+    ```
+    /usr/local/lib/python3.7/site-packages/sheetFeeder
+    ```
 
-    Create a new virtual environment in a convenient location with an appropriate name (here called "sfvenv" in the working directory—it can be at any location as long as you note the path for steps below):
+    #### Virtual environment installation
 
-    ```bash
+    The command `venv` is used to create a virtual Python environment. See https://docs.python.org/3/library/venv.html. (Commands below are for a bash shell in Linux or Mac OS; your use of venv may vary,see the venv documentation linked above.)
+
+    (a) Use `venv` to create a new virtual Python 3 environment in a convenient location with an appropriate name such as "sfvenv":
+
+    ```
     python3 -m venv sfvenv
     ```
 
-    Activate the virtual environment to which dependencies will be added:
+    (b) Activate the virtual environment to which dependencies will be added:
 
-    ```bash
+    ```
     source sfvenv/bin/activate
     ```
 
-3. Install the `sheetFeeder` package into the virtual environment using `pip`:
+    (To deactivate the environment use the command `deactivate`.)
 
-    ```bash
+    (c) Install `sheetFeeder` using pip:
+
+    ```
     pip install sheetFeeder
     ```
 
-    NOTE: This installs several external dependency packages, versions of which you may need to manage in relation to the needs of your project:  
-
-    - `requests`
-    - `google-api-python-client`
-    - `oauth2client`
-
-    If you get an error saying "invalid command 'bdist_wheel'" you may need to install `wheel` (`pip install wheel`) and repeat.
-
-    Your virtual environment may need additional packages installed of course, depending on your project.
-
-4. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to `sheetFeeder`. 
-
-    - Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
-    - Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json`.
-
-5. Place `credentials.json` in the `sheetFeeder` package folder within your virtual environment. The path may vary but it will be something like:
+    This will install into the activated virtual environment and only be available while the environment is active. Note the location where the library was installed for step 2 below. It will be something like:
 
     ```
     sfvenv/lib/python3.6/site-packages/sheetFeeder/
     ```
 
-6. Authenticate and authorize access to your Google account's API (Quickstart).
-    - Run `sample.py` (`python sample.py`).
-    - The first time you use the API you will be asked to select the Google identity to use (if more than one are active) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
+    #### Stand-alone installation
+
+    If you prefer not to install the module as a package but rather wish to use it as a standalone Python module, you will need to install a few dependencies yourself, either in a virtual environment or in your default Python 3 environment. In this case, download `sheetFeeder.py` to your working directory and import it from your scripts in the same directory.
+
+    Dependencies to install into environment:
+
+    * `pip install requests`
+    * `pip install --upgrade google-api-python-client`
+    * `pip install oauth2client`
+
+    In this scenario, you will place the `credentials.json` file from step 2 below in the same working directory as `sheetFeeder.py`.
+
+
+2. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to `sheetFeeder`. 
+
+    - Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
+    - Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json`.
+    - Place `credentials.json` in the `sheetFeeder` package location as identified in step 1 above (will be different depending on which type of installation you opted for).
+
+3. Authenticate and authorize access to your Google account's API (Quickstart).
+    - Download and run `sample.py` in your working directory.
+    - The first time you use the API you will be asked to select the Google identity to use (if more than one are detected) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
     - Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
+    - If successful, a `token.json` file should be created in the same folder as the `credentials.json` file (see step 1 above for location), and a brief readout of sample table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps; you can verify this by running `sample.py` again—you should get the read-out without the authentication steps. 
 
-7. If successful, a `token.json` file will be created in the same folder as the credentials, and a brief readout of table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps. You can verify this by running `sample.py` again (you should just get the read-out without the authentication steps). 
-
-(Note that `credentials.json` and `token.json` can be reused in other virtual environments that have `sheetFeeder` installed without repeating steps 4–7 above.)
-
-### Using as a stand-alone module
-
-If you prefer not to install the module as a package but rather wish to use it as a standalone Python module, you will need to install a few dependencies yourself, either in a virtual environment or in your default Python 3 environment. In this case, download `sheetFeeder.py` to your working directory and import it from your scripts in the same directory.
-
-Dependencies to install into environment:
-
-* `pip install requests`
-* `pip install --upgrade google-api-python-client`
-* `pip install oauth2client`
-
-To establish connectivity to the API, repeat steps 4 and 6 above. The files `credentials.json` and `token.json` then should reside in the same folder as `sheetFeeder.py`. They can be copied to other projects and will continue to work.
-
-```bash
-├── credentials.json
-├── sample.py
-├── sheetFeeder.py
-├── token.json
-└── your_script.py
-```
-
-### Redoing authorization
-
-If you need to use a different Google account or re-establish fresh credentials, delete the `credentials.json` and `token.json` files above and repeat the steps to create them anew.
+*Note that your API credentials (`credentials.json` and `token.json`) can be reused in other environments where `sheetFeeder` is installed without repeating steps 2–3 above. You may copy them to the appropriate location per step 1 above. To disallow API access and reset to the initial state, simply delete the files. You may also manage API access via the [Google API console](https://console.developers.google.com/).*
 
 
 ## Using sheetFeeder
@@ -120,7 +109,6 @@ my_sheet = dataSheet('1YzM1diaFchenQnchemgogyU2menGxv5Gme','Sheet1!A:Z')
 ```
 
 This enables several methods on the dataSheet class, as outlined below.
-
 
 
 ### Methods
