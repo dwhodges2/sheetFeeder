@@ -22,7 +22,7 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
 
     There are several ways to use `sheetFeeder`, depending how you want to manage dependencies like authentication credentials. Three options are described here: system installation, installation in a virtual environment, and stand-alone module use. For testing and portability, the virtual-environment option is most recommended.
 
-    #### System installation
+    #### A. System installation
 
     To install into your default Python 3 environment, use the version of pip assocated with that environment (usually `pip3`).
 
@@ -38,37 +38,37 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
     /usr/local/lib/python3.7/site-packages/sheetFeeder
     ```
 
-    #### Virtual environment installation
+    #### B. Virtual environment installation
 
     The command `venv` is used to create a virtual Python environment. See https://docs.python.org/3/library/venv.html. (Commands below are for a bash shell in Linux or Mac OS; your use of venv may vary,see the venv documentation linked above.)
 
-    (a) Use `venv` to create a new virtual Python 3 environment in a convenient location with an appropriate name such as "sfvenv":
+    * Use `venv` to create a new virtual Python 3 environment in a convenient location with an appropriate name such as "sfvenv":
 
-    ```
-    python3 -m venv sfvenv
-    ```
+        ```
+        python3 -m venv sfvenv
+        ```
 
-    (b) Activate the virtual environment to which dependencies will be added:
+    * Activate the virtual environment to which dependencies will be added:
 
-    ```
-    source sfvenv/bin/activate
-    ```
+        ```
+        source sfvenv/bin/activate
+        ```
 
-    (To deactivate the environment use the command `deactivate`.)
+        (To deactivate the environment use the command `deactivate`.)
 
-    (c) Install `sheetFeeder` using pip:
+    * Install `sheetFeeder` using pip:
 
-    ```
-    pip install sheetFeeder
-    ```
+        ```
+        pip install sheetFeeder
+        ```
 
-    This will install into the activated virtual environment and only be available while the environment is active. Note the location where the library was installed for step 2 below. It will be something like:
+        This will install into the activated virtual environment and only be available while the environment is active. Note the location where the library was installed for step 2 below. It will be something like:
 
-    ```
-    sfvenv/lib/python3.6/site-packages/sheetFeeder/
-    ```
+        ```
+        sfvenv/lib/python3.6/site-packages/sheetFeeder/
+        ```
 
-    #### Stand-alone installation
+    #### C. Stand-alone installation
 
     If you prefer not to install the module as a package but rather wish to use it as a standalone Python module, you will need to install a few dependencies yourself, either in a virtual environment or in your default Python 3 environment. In this case, download `sheetFeeder.py` to your working directory and import it from your scripts in the same directory.
 
@@ -93,7 +93,9 @@ NEW: Now available as an [installable package from pypi.org](https://pypi.org/pr
     - Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
     - If successful, a `token.json` file should be created in the same folder as the `credentials.json` file (see step 1 above for location), and a brief readout of sample table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps; you can verify this by running `sample.py` again—you should get the read-out without the authentication steps. 
 
-*Note that your API credentials (`credentials.json` and `token.json`) can be reused in other environments where `sheetFeeder` is installed without repeating steps 2–3 above. You may copy them to the appropriate location per step 1 above. To disallow API access and reset to the initial state, simply delete the files. You may also manage API access via the [Google API console](https://console.developers.google.com/).*
+### Reusing and revoking API credentials
+
+Note that your API credentials (`credentials.json` and `token.json`) can be reused in other environments where `sheetFeeder` is installed without repeating steps 2–3 above. You may copy them to the appropriate location per step 1 above. To disallow API access and reset to the initial state, simply delete the files. You may also manage API access via the [Google API console](https://console.developers.google.com/).
 
 
 ## Using sheetFeeder
