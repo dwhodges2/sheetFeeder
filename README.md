@@ -126,6 +126,10 @@ This enables several methods on the dataSheet class, as outlined below.
   * Return the contents of dataSheet rotated as columns, in a list of lists.
   * Example: `my_sheet.getDataColumns()`
   * Result: [['head1', 'a', 'one'],['head2', 'b','two']]
+* `getDataSeries()`
+  * Return the contents of dataSheet as a dict with each column a series. Assumes that the first row is heads.
+  * Example: `my_sheet.getDataSeries()`
+  * Result: {'head1: ['a', 'c'], 'head2': ['b', 'd']}
 * `appendData(data)`
   * Append rows of data to sheet.  Note: the range is only used to identify a table; values will be appended as rows at the end of table, not at end of range.
   * Example: `my_sheet.appendData([[5,"e", 'xx'],[6,"f"],[7,"g"]])`
@@ -153,6 +157,61 @@ This enables several methods on the dataSheet class, as outlined below.
 * `.initTabs`: Returns a list of names of tabs in spreadsheet.
 * `.url`: Returns public url of sheet of form https://docs.google.com/spreadsheets/d/{sheet_id}/edit#gid={tab_id}
 
+
+## Using sheetFeeder with Pandas
+
+You can easily use sheetFeeder in [Pandas](https://pandas.pydata.org/) projects. Data retrieved from Google Sheets is easily translated into Pandas dataframes. Pandas outputs can be posted to Google Sheets as well. The file `pandas_examples.py` demonstrates some use cases. The default output from sheetFeeder is a 2-dimensional list array. So, assuming the first row contains the heads, you only need to pop that row into the `columns` parameter when creating a DataFrame object.
+
+  ```python
+  def datasheet_to_dataframe(_sheet_id, _sheet_range):
+    the_data = dataSheet(_sheet_id, _sheet_range).getData()
+    heads = the_data.pop(0)  # assumes the first row is column heads.
+    return pd.DataFrame(the_data, columns=heads)
+
+  df = datasheet_to_dataframe(sheet_id, sheet_range)
+  ```
+
+Using the sample table in the example, the `df` object will look like:
+
+
+  ```
+      Col A Col B Col C Col D
+  0     1     2     3     4
+  1     5     6     7     8
+  ```
+
+The reverse process converts a Pandas dataframe back into a 2-dimensional array for use in sheetFeeder:
+
+  ```python
+  def dataframe_to_datasheet(_df):
+    heads = list(_df.columns.values)
+    ds = _df.values.tolist()
+    ds.insert(0, heads)
+    return ds
+
+  dataframe_to_datasheet(df)
+
+  >>> [['Col A', 'Col B', 'Col C', 'Col D'], ['1', '2', '3', '4'], ['5', '6', '7', '8']]
+  ```
+
+The `getDataSeries()` method also gets data as series such that they can be fed into a Pandas dataframe easily:
+
+  ```python
+  ds = dataSheet(sheet_id, sheet_range)
+  ds_series = ds.getDataSeries()
+  ds_series
+
+  >>> {'Col A': ['1', '5'], 'Col B': ['2', '6'], 'Col C': ['3', '7'], 'Col D': ['4', '8']}
+
+  pd.DataFrame(ds_series)
+
+  >>> 
+    Col A Col B Col C Col D
+  0     1     2     3     4
+  1     5     6     7     8
+  ```
+
+Run the included `pandas_examples.py` to demonstrate the transformations to and from Pandas.
 
 ## Notes
 
