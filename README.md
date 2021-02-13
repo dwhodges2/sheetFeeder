@@ -16,7 +16,7 @@ This module has been heavily used in Columbia University Libraries' archival dat
 
 ## Setup
 
-NEW: Now available as an [installable package from pypi.org](https://pypi.org/project/sheetFeeder/)!
+This library is bundled as an [installable package from pypi.org](https://pypi.org/project/sheetFeeder/).
 
 1. Installation
 
@@ -212,6 +212,17 @@ The `getDataSeries()` method also gets data as series such that they can be fed 
   ```
 
 Run the included `pandas_examples.py` to demonstrate the transformations to and from Pandas.
+
+## Error handling and recovery
+
+Occasionally the API returns an HTTP error of one kind or another (`googleapiclient.errors.HttpError`) and refuses a request. Assuming credentials are in order, this is likely an intermittent problem on the server side, and can be addressed by recovering and retrying the request after a short interval. Several defaults are defined as global variables in `sheetFeeder.py` to apply to all API calls:
+
+* `retry_default = True`
+* `interval_default = 0.5`
+* `max_tries_default = 5`
+
+A backoff function will double the retry interval with each try until the max number is reached. If the request still cannot be executed, an exception is raised of the class `sheetFeederError`. The optimal interval between retries is subject to speculation.
+
 
 ## Notes
 
