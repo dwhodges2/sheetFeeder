@@ -1,26 +1,39 @@
-from googleapiclient import discovery
 from googleapiclient.discovery import build
+import googleapiclient.errors
 from httplib2 import Http
 from oauth2client import file, client, tools
-import json
 import re
 import os.path
 import csv
 import uuid
+import time
+import random
 
 
 # If modifying these scopes, delete the file token.json.
 # SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
+SCOPES = "https://www.googleapis.com/auth/spreadsheets"
 
 
 # Credentials
 my_path = os.path.dirname(__file__)
-CREDENTIALS = os.path.join(my_path, 'credentials.json')
-TOKEN = os.path.join(my_path, 'token.json')
+CREDENTIALS = os.path.join(my_path, "credentials.json")
+TOKEN = os.path.join(my_path, "token.json")
+
+
+# Globals
+
+# Set defaults for how to handle http errors.
+retry_default = True
+interval_default = 0.5
+max_tries_default = 5
 
 
 # Classes and Methods
+
+class sheetFeederError(Exception):
+    pass
+
 
 class dataSheet:
     def __init__(self, id, range):
@@ -48,10 +61,10 @@ class dataSheet:
     def lookup(self, search_str, col_search, col_result):
         return sheetLookup(self.id, self.range, search_str, col_search, col_result)
 
-    def matchingRows(self, queries, regex=True, operator='or'):
-        return getMatchingRows(self.id, self.range, queries, regex=True, operator='or')
+    def matchingRows(self, queries, regex=True, operator="or"):
+        return getMatchingRows(self.id, self.range, queries, regex=True, operator="or")
 
-    def importCSV(self, csv, delim=',', quote='NONE'):
+    def importCSV(self, csv, delim=",", quote="NONE"):
         return sheetImportCSV(self.id, self.range, csv, delim, quote)
 
     # TODO: add validation method.
@@ -63,14 +76,53 @@ def main():
 
     # Test some code here if you like.
 
+    # the_sheet = dataSheet("19zHqOJt9XUGfrfzAXzOcr4uARgCGbyYiOtoaOCAMP7s", "Sheet1!A:Z")
     the_sheet = dataSheet(
-        'd1YzM1dinagfoTUirAoA2hHBfnhSM1PsPt8TkwTT9KlgQ', 'Sheet1!A:Z')
-    # print(the_sheet.getData())
-    print(the_sheet.getDataColumns())
+        "1yLW0HjCc0XnwCTTsv6-BFpN4WLSumXJm9aF973UjG9o", "Sheet1!A:Z")
+
+    print(the_sheet.getData())
+
+    x = the_sheet.appendData([["d", "e", "f"]])
+    print(x)
+    # print(the_sheet.getDataColumns())
     # x = the_sheet.matchingRows([['BIBID', '4079432'], ['Title', '.*Humph.*']])
     # print(x)
 
     quit()
+
+
+###########
+
+def backoff(num, multiplier=2):
+    # incremental backoff function for retries
+    return (num * multiplier) + (random.randint(0, 1000) / 1000)
+
+
+def execute_request(
+    request, retry=retry_default, interval=interval_default, max_tries=max_tries_default
+):
+    attempt = 1
+    if not retry:
+        max_tries = 1
+    while attempt < max_tries:
+        try:
+            return request.execute()
+        except googleapiclient.errors.HttpError as e:
+            # Keep retrying until max retries hit.
+            print("Warning: API error encountered: " + str(e))
+            print(e)
+            print("Retrying after " + str(interval) + " sec ...")
+            time.sleep(interval)
+            interval = backoff(interval)
+            attempt += 1
+    # Failed all attempts.
+    raise sheetFeederError(
+        "Could not complete request "
+        + str(request)
+        + " after "
+        + str(attempt)
+        + " tries."
+    )
 
 
 def getSheetInfo(sheet):
@@ -78,9 +130,9 @@ def getSheetInfo(sheet):
     service = googleAuth()
     spreadsheet_id = sheet
     request = service.spreadsheets().get(
-        spreadsheetId=spreadsheet_id, includeGridData=False)
-    response = request.execute()
-    return response
+        spreadsheetId=spreadsheet_id, includeGridData=False
+    )
+    return execute_request(request)
 
 
 def getSheetTabs(sheet):
@@ -88,12 +140,13 @@ def getSheetTabs(sheet):
     service = googleAuth()
     spreadsheet_id = sheet
     request = service.spreadsheets().get(
-        spreadsheetId=spreadsheet_id, includeGridData=False)
-    sheet_data = request.execute()
-    the_sheets = sheet_data['sheets']
+        spreadsheetId=spreadsheet_id, includeGridData=False
+    )
+    sheet_data = execute_request(request)
+    the_sheets = sheet_data["sheets"]
     the_tabs = []
     for s in the_sheets:
-        the_title = s['properties']['title']
+        the_title = s["properties"]["title"]
         the_tabs.append(the_title)
 
     return the_tabs
@@ -105,17 +158,25 @@ def getSheetData(sheet, range):
     spreadsheet_id = sheet
     range_ = range
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueRenderOption
-    value_render_option = 'FORMATTED_VALUE'
+    value_render_option = "FORMATTED_VALUE"
     # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
-    date_time_render_option = 'SERIAL_NUMBER'
-    request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_,
-                                                  valueRenderOption=value_render_option, dateTimeRenderOption=date_time_render_option)
-    the_data = request.execute()
+    date_time_render_option = "SERIAL_NUMBER"
+    request = (
+        service.spreadsheets()
+        .values()
+        .get(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueRenderOption=value_render_option,
+            dateTimeRenderOption=date_time_render_option,
+        )
+    )
+    # the_data = request.execute()
+    the_data = execute_request(request)
     if "values" in the_data:
-        response = the_data["values"]
+        return the_data["values"]
     else:
-        response = []
-    return response
+        return []
 
 
 def getSheetDataColumns(sheet, range):
@@ -124,18 +185,23 @@ def getSheetDataColumns(sheet, range):
     spreadsheet_id = sheet
     range_ = range
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueRenderOption
-    value_render_option = 'FORMATTED_VALUE'
+    value_render_option = "FORMATTED_VALUE"
     # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
-    date_time_render_option = 'SERIAL_NUMBER'
-    major_dimension = 'COLUMNS'
-    request = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_,
-                                                  valueRenderOption=value_render_option, majorDimension=major_dimension, dateTimeRenderOption=date_time_render_option)
-    the_data = request.execute()
-    if "values" in the_data:
-        response = the_data["values"]
-    else:
-        response = []
-    return response
+    date_time_render_option = "SERIAL_NUMBER"
+    major_dimension = "COLUMNS"
+    request = (
+        service.spreadsheets()
+        .values()
+        .get(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueRenderOption=value_render_option,
+            majorDimension=major_dimension,
+            dateTimeRenderOption=date_time_render_option,
+        )
+    )
+    the_data = execute_request(request)
+    return the_data["values"] if "values" in the_data else []
 
 
 def getSheetDataSeries(sheet, range):
@@ -147,9 +213,13 @@ def getSheetDataSeries(sheet, range):
         if len(col) > 0:
             key = col.pop(0)
             if key in the_series:
-                key_new = str(key) + '_' + str(uuid.uuid1())
-                print("Warning: Duplicate column heading " +
-                      str(key) + ". Renaming as " + key_new)
+                key_new = str(key) + "_" + str(uuid.uuid1())
+                print(
+                    "Warning: Duplicate column heading "
+                    + str(key)
+                    + ". Renaming as "
+                    + key_new
+                )
                 the_series[key_new] = col
             else:
                 the_series[key] = col
@@ -158,13 +228,24 @@ def getSheetDataSeries(sheet, range):
 
 def getSheetURL(sheet, range):
     # Pull the title of tab from the range
-    tab_name = range.split('!')[0]
-    sheet_info = getSheetInfo(sheet)['sheets']
+    tab_name = range.split("!")[0]
+    sheet_info = getSheetInfo(sheet)["sheets"]
     # Look for sheet matching name and get its ID
-    sheet_id = next(i['properties']['sheetId']
-                    for i in sheet_info if i['properties']['title'] == tab_name)
-    the_url = 'https://docs.google.com/spreadsheets/d/' + \
-        str(sheet) + '/edit#gid=' + str(sheet_id)
+    try:
+        sheet_id = next(
+            i["properties"]["sheetId"]
+            for i in sheet_info
+            if i["properties"]["title"] == tab_name
+        )
+        the_url = (
+            "https://docs.google.com/spreadsheets/d/"
+            + str(sheet)
+            + "/edit#gid="
+            + str(sheet_id)
+        )
+    except StopIteration:
+        raise sheetFeederError("The tab '" + tab_name +
+                               "' could not be found!")
     return the_url
 
 
@@ -175,29 +256,40 @@ def sheetClear(sheet, range):
     clear_values_request_body = {
         # TODO: Add desired entries to the request body.
     }
-    request = service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id,
-                                                    range=range_, body=clear_values_request_body)
-    response = request.execute()
-    return response
+    request = (
+        service.spreadsheets()
+        .values()
+        .clear(
+            spreadsheetId=spreadsheet_id, range=range_, body=clear_values_request_body
+        )
+    )
+    return execute_request(request)
 
 
 def sheetAppend(sheet, range, data):
-    # Append rows to end of detected table.
+    # Append rows to end of detecteexecute_request(request)d table.
     # Note: the range is only used to identify a table; values will be appended at the end of table, not at end of range.
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
     service = googleAuth()
     spreadsheet_id = sheet
     range_ = range
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-    value_input_option = 'USER_ENTERED'
+    value_input_option = "USER_ENTERED"
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
-    insert_data_option = 'OVERWRITE'
-    value_range_body = {'values': data}
-    request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_,
-                                                     valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
-    response = request.execute()
-
-    return response
+    insert_data_option = "OVERWRITE"
+    value_range_body = {"values": data}
+    request = (
+        service.spreadsheets()
+        .values()
+        .append(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueInputOption=value_input_option,
+            insertDataOption=insert_data_option,
+            body=value_range_body,
+        )
+    )
+    return execute_request(request)
 
 
 def sheetLookup(sheet, range, search_str, col_search, col_result):
@@ -215,14 +307,12 @@ def sheetLookup(sheet, range, search_str, col_search, col_result):
     for aRow in theData:
         if aRow[col_search] == search_str:
             # matching result
-            theResultSet = []
-            for y in returnCols:
-                theResultSet.append(aRow[y])
+            theResultSet = [aRow[y] for y in returnCols]
             theResults.append(theResultSet)
     return theResults
 
 
-def sheetImportCSV(sheet, range, a_csv, delim=',', quote='NONE'):
+def sheetImportCSV(sheet, range, a_csv, delim=",", quote="NONE"):
     # Note: will clear contents of sheet range first.
     #  delim (optional): comma by default, can be pipe, colon, etc.
     #  quote (optional): NONE by default. Can be:
@@ -234,32 +324,40 @@ def sheetImportCSV(sheet, range, a_csv, delim=',', quote='NONE'):
     range_ = range
 
     # Process optional quote handling instruction.
-    if quote == 'ALL':
+    if quote == "ALL":
         quote_param = csv.QUOTE_ALL
-    elif quote == 'MINIMAL':
+    elif quote == "MINIMAL":
         quote_param = csv.QUOTE_MINIMAL
-    elif quote == 'NONNUMERIC':
+    elif quote == "NONNUMERIC":
         quote_param = csv.QUOTE_NONNUMERIC
     else:
         quote_param = csv.QUOTE_NONE
 
     # TODO: Improve ability to pass parameters through to csv dialect options. See https://docs.python.org/3/library/csv.html
-    csv.register_dialect('my_dialect', delimiter=delim, quoting=quote_param)
+    csv.register_dialect("my_dialect", delimiter=delim, quoting=quote_param)
 
     data = []
 
     with open(a_csv) as the_csv_data:
-        for row in csv.reader(the_csv_data, 'my_dialect'):
+        for row in csv.reader(the_csv_data, "my_dialect"):
             data.append(row)
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-    value_input_option = 'USER_ENTERED'
+    value_input_option = "USER_ENTERED"
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
-    insert_data_option = 'OVERWRITE'
-    value_range_body = {'values': data}
-    request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_,
-                                                     valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
-    response = request.execute()
-    return response
+    insert_data_option = "OVERWRITE"
+    value_range_body = {"values": data}
+    request = (
+        service.spreadsheets()
+        .values()
+        .append(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueInputOption=value_input_option,
+            insertDataOption=insert_data_option,
+            body=value_range_body,
+        )
+    )
+    return execute_request(request)
 
 
 def batchGetByDataFilter(sheet, datafilters):
@@ -268,20 +366,24 @@ def batchGetByDataFilter(sheet, datafilters):
     spreadsheet_id = sheet
 
     batch_get_values_by_data_filter_request_body = {
-        'value_render_option': 'FORMATTED_VALUE',
-        'data_filters': datafilters,
-        'date_time_render_option': 'SERIAL_NUMBER'
+        "value_render_option": "FORMATTED_VALUE",
+        "data_filters": datafilters,
+        "date_time_render_option": "SERIAL_NUMBER"
         # TODO: Add desired entries to the request body.
     }
 
-    request = service.spreadsheets().values().batchGetByDataFilter(
-        spreadsheetId=spreadsheet_id, body=batch_get_values_by_data_filter_request_body)
-    response = request.execute()
+    request = (
+        service.spreadsheets()
+        .values()
+        .batchGetByDataFilter(
+            spreadsheetId=spreadsheet_id,
+            body=batch_get_values_by_data_filter_request_body,
+        )
+    )
+    return execute_request(request)
 
-    return response
 
-
-def getMatchingRows(sheet, range, queries, regex=True, operator='or'):
+def getMatchingRows(sheet, range, queries, regex=True, operator="or"):
     # Return a list of rows for which at least one queried column matches regex query. Assumes the first row contains heads.
     # Queries are pairs of column heads and matching strings, e.g., [['ID','123'],['Author','Yeats']]. They are regex by default and can be joined by either 'and' or 'or' logic.
 
@@ -323,8 +425,8 @@ def getMatchingRows(sheet, range, queries, regex=True, operator='or'):
 
         # Determine if row matches, depending on and/or junction
         is_hit = False
-        if operator == 'and':  # and: all must be True
-            if not(False in res):
+        if operator == "and":  # and: all must be True
+            if not (False in res):
                 is_hit = True
 
         else:  # default 'or' junction: at least one must be True
@@ -334,7 +436,7 @@ def getMatchingRows(sheet, range, queries, regex=True, operator='or'):
         if is_hit == True:
 
             # Check if the row is alredy in the results, and add if not.
-            if not([r["row"] for r in the_results if r["row"] == row_num]):
+            if not ([r["row"] for r in the_results if r["row"] == row_num]):
                 the_row_info = {}
                 the_row_info["row"] = row_num
                 the_row_info["data"] = row_data
@@ -343,9 +445,9 @@ def getMatchingRows(sheet, range, queries, regex=True, operator='or'):
 
     if len(the_results) > 0:
         # Add heads as first row.
-        the_results.insert(0, {'row': 1, 'data': the_heads})
+        the_results.insert(0, {"row": 1, "data": the_heads})
         # sort the results by row number.
-        the_results = sorted(the_results, key=lambda k: k['row'])
+        the_results = sorted(the_results, key=lambda k: k["row"])
 
     # Result (if any) will be list of dicts, with head row as first item for further processing if needed.
     # Each dict is of form {'row': <integer>, 'data': [<col1_data>, <col2_data>, etc.]}
@@ -360,9 +462,8 @@ def googleAuth():
         flow = client.flow_from_clientsecrets(CREDENTIALS, SCOPES)
         creds = tools.run_flow(flow, store)
 
-    service = build('sheets', 'v4', http=creds.authorize(Http()))
-    return service
+    return build("sheets", "v4", http=creds.authorize(Http()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
