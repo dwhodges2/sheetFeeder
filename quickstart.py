@@ -7,10 +7,9 @@ from oauth2client import file, client, tools
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
 # The ID and range of a sample spreadsheet.
-# SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
-# SAMPLE_RANGE_NAME = 'Class Data!A2:E'
-SAMPLE_SPREADSHEET_ID = '1js0KawsDP1CIwTcYKdqM0XftPCTPgPrB2H80xdgaKlc'
-SAMPLE_RANGE_NAME = 'AS-lookup!A2:D'
+SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
+SAMPLE_RANGE_NAME = 'Class Data!A2:E'
+
 
 def main():
     """Shows basic usage of the Sheets API.
@@ -40,6 +39,6 @@ def main():
             # Print columns A and E, which correspond to indices 0 and 4.
             print('%s, %s, %s' % (row[0], row[1], row[2]))
 
+
 if __name__ == '__main__':
     main()
- 

@@ -49,6 +49,9 @@ class dataSheet:
     def getData(self):
         return getSheetData(self.id, self.range)
 
+    def getData2(self):
+        return getSheetData2(self.id, self.range)
+
     def getDataColumns(self):
         return getSheetDataColumns(self.id, self.range)
 
@@ -76,22 +79,13 @@ def main():
 
     # Test some code here if you like.
 
-    # the_sheet = dataSheet("19zHqOJt9XUGfrfzAXzOcr4uARgCGbyYiOtoaOCAMP7s", "Sheet1!A:Z")
     the_sheet = dataSheet(
-        "1yLW0HjCc0XnwCTTsv6-BFpN4WLSumXJm9aF973UjG9o", "Sheet1!A:Z")
+        "19zHqOJt9XUGfrfzAXzOcr4uARgCGbyYiOtoaOCAMP7s", "Sheet1!A:Z")
 
     print(the_sheet.getData())
 
-    x = the_sheet.appendData([["d", "e", "f"]])
-    print(x)
-    # print(the_sheet.getDataColumns())
-    # x = the_sheet.matchingRows([['BIBID', '4079432'], ['Title', '.*Humph.*']])
-    # print(x)
-
     quit()
 
-
-###########
 
 def backoff(num, multiplier=2):
     # incremental backoff function for retries
