@@ -120,8 +120,12 @@ This enables several methods on the dataSheet class, as outlined below.
   * Example: `my_sheet.clear()`: 
 * `getData()`
   * Return the contents of dataSheet in a list of lists.
+  * Optional query to filter results, see syntax of `matchingRows()` below.
   * Example: `my_sheet.getData()`
   * Result: [['head1', 'head2'],['a', 'b'],['one', 'two']]
+  * Example with filter: `my_sheet.getData(filter_queries=[['head2', 'b']])`
+  * Result: [['a', 'b']]
+
 * `getDataColumns()`
   * Return the contents of dataSheet rotated as columns, in a list of lists.
   * Example: `my_sheet.getDataColumns()`
@@ -145,8 +149,8 @@ This enables several methods on the dataSheet class, as outlined below.
   * Example: `my_sheet.matchingRows([['ID', '123'], ['Title', '.*Humph.*']], operator='and')`
   * Result: Return all rows where ID = 123 *and* Title matches the regex expression `.*Humph.*`. 
 * `importCSV(csv,delim=',',quote='NONE')`
-  * Import a CSV file into a designated sheet range, overwriting what is there. Delimeter is comma by default, but can be any character, e.g., pipe ('|').
-  * Example: `my_sheet.importCSV(my_file,delim='|')`
+  * Import a CSV file into a designated sheet range, overwriting what is there. Can be either local or remote. If string begins with "http" it will be treated as a URL and requested via urllib3. Otherwise it will treat it as a local file path. Delimeter is comma by default, but can be any character, e.g., pipe ('|').
+  * Example: `my_sheet.importCSV(my_file_path,delim='|')`
   * Result: Import contents of pipe-delimited text file into dataSheet.
 
 ### Additional subclasses
@@ -226,5 +230,5 @@ A backoff function will double the retry interval with each try until the max nu
 
 ## Notes
 
-This is a work in progress. Comments/suggestions as well as forking very welcome. 
+This is a work in progress. Comments/suggestions very welcome. 
 
