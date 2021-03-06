@@ -30,7 +30,7 @@ This library is bundled as an [installable package from pypi.org](https://pypi.o
     pip3 install sheetFeeder
     ```
 
-    NOTE: You may need to prepend `sudo` to the avove to install at the system level. If you do not have su permissions to install Python packages, you may do better to use a virtual environment (see below).
+    NOTE: You may need to prepend `sudo` to the above to install at the system level. If you do not have `su` permissions to install Python packages, you may do better to use a virtual environment (see below).
 
     You will need to note the location where the package is installed for step 2 below. It will be something like:
 
@@ -88,7 +88,7 @@ This library is bundled as an [installable package from pypi.org](https://pypi.o
     - Place `credentials.json` in the `sheetFeeder` package location as identified in step 1 above (will be different depending on which type of installation you opted for).
 
 3. Authenticate and authorize access to your Google account's API (Quickstart).
-    - Download and run `sample.py` in your working directory.
+    - Download and run [sample.py](https://github.com/dwhodges2/sheetFeeder/blob/master/sample.py) in your working directory.
     - The first time you use the API you will be asked to select the Google identity to use (if more than one are detected) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
     - Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
     - If successful, a `token.json` file should be created in the same folder as the `credentials.json` file (see step 1 above for location), and a brief readout of sample table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps; you can verify this by running `sample.py` again—you should get the read-out without the authentication steps. 

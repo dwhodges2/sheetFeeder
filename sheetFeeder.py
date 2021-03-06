@@ -1,13 +1,15 @@
 from googleapiclient.discovery import build
 import googleapiclient.errors
 from httplib2 import Http
-from oauth2client import file, client, tools
+from oauth2client import file, client, tools, clientsecrets
 import re
 import os.path
 import csv
 import uuid
 import time
 import random
+import urllib3
+import io
 
 
 # If modifying these scopes, delete the file token.json.
@@ -16,17 +18,17 @@ SCOPES = "https://www.googleapis.com/auth/spreadsheets"
 
 
 # Credentials
-my_path = os.path.dirname(__file__)
-CREDENTIALS = os.path.join(my_path, "credentials.json")
-TOKEN = os.path.join(my_path, "token.json")
+MY_PATH = os.path.dirname(__file__)
+CREDENTIALS = os.path.join(MY_PATH, "credentials.json")
+TOKEN = os.path.join(MY_PATH, "token.json")
 
 
 # Globals
 
 # Set defaults for how to handle http errors.
-retry_default = True
-interval_default = 0.5
-max_tries_default = 5
+RETRY_DEFAULT = True
+INTERVAL_DEFAULT = 0.5
+MAX_TRIES_DEFAULT = 5
 
 
 # Classes and Methods
@@ -46,11 +48,8 @@ class dataSheet:
     def clear(self):
         sheetClear(self.id, self.range)
 
-    def getData(self):
-        return getSheetData(self.id, self.range)
-
-    def getData2(self):
-        return getSheetData2(self.id, self.range)
+    def getData(self, filter_queries=None, filter_regex=True, filter_operator="or"):
+        return getSheetData(self.id, self.range, filter_queries, filter_regex, filter_operator)
 
     def getDataColumns(self):
         return getSheetDataColumns(self.id, self.range)
@@ -65,7 +64,7 @@ class dataSheet:
         return sheetLookup(self.id, self.range, search_str, col_search, col_result)
 
     def matchingRows(self, queries, regex=True, operator="or"):
-        return getMatchingRows(self.id, self.range, queries, regex=True, operator="or")
+        return getMatchingRows(self.id, self.range, queries, regex, operator)
 
     def importCSV(self, csv, delim=",", quote="NONE"):
         return sheetImportCSV(self.id, self.range, csv, delim, quote)
@@ -79,12 +78,13 @@ def main():
 
     # Test some code here if you like.
 
-    the_sheet = dataSheet(
-        "19zHqOJt9XUGfrfzAXzOcr4uARgCGbyYiOtoaOCAMP7s", "Sheet1!A:Z")
+    # the_sheet = dataSheet(
+    #     "19zHqOJt9XUGfrfzAXzOcr4uARgCGbyYiOtoaOCAMP7s", "Sheet1!A:Z")
 
-    print(the_sheet.getData())
+    # print(the_sheet.getData())
 
     quit()
+###############
 
 
 def backoff(num, multiplier=2):
@@ -93,7 +93,7 @@ def backoff(num, multiplier=2):
 
 
 def execute_request(
-    request, retry=retry_default, interval=interval_default, max_tries=max_tries_default
+    request, retry=RETRY_DEFAULT, interval=INTERVAL_DEFAULT, max_tries=MAX_TRIES_DEFAULT
 ):
     attempt = 1
     if not retry:
@@ -104,7 +104,6 @@ def execute_request(
         except googleapiclient.errors.HttpError as e:
             # Keep retrying until max retries hit.
             print("Warning: API error encountered: " + str(e))
-            print(e)
             print("Retrying after " + str(interval) + " sec ...")
             time.sleep(interval)
             interval = backoff(interval)
@@ -117,6 +116,77 @@ def execute_request(
         + str(attempt)
         + " tries."
     )
+
+
+def find_matches(array, queries, regex=True, operator="or"):
+
+    # use first row as heads
+    the_heads = array[0]
+    col_count = len(the_heads)
+
+    the_results = []
+
+    the_query_pairs = []
+    for q in queries:
+        # Get list of column indexes for which the head matches query (should usually be just one or none).
+        the_col_indexes = [ind for ind,
+                           txt in enumerate(the_heads) if txt == q[0]]
+        the_query_pairs.append([q[1], the_col_indexes])
+
+    # Process each row testing against all query pairs; result is a list of booleans.
+    for row_num, row_data in enumerate(array):
+
+        # Adjust list to match row numbers in sheet, starting with 1
+        row_num = row_num + 1
+
+        res = []
+        for p in the_query_pairs:
+            # get cell data for each row in the target columns;
+            # when the row has empty cells at end, return empty result
+            # if the target col exceeds length of row.
+            the_cell_data = [row_data[c]
+                             for c in p[1] if (c + 1) <= len(row_data)]
+            if regex == True:
+                the_pattern = re.compile(p[0])
+                res_list = list(filter(the_pattern.search, the_cell_data))
+            else:
+                res_list = the_cell_data.count(p[0])
+                # TODO: this works but is clunky, diff type of object.
+
+            if res_list:  # if there is any matches...
+                res.append(True)
+            else:
+                res.append(False)
+
+        # Determine if row matches, depending on and/or junction
+        is_hit = False
+        if operator == "and":  # and: all must be True
+            if not (False in res):
+                is_hit = True
+
+        else:  # default 'or' junction: at least one must be True
+            if True in res:
+                is_hit = True
+
+        if is_hit == True:
+
+            # Check if the row is alredy in the results, and add if not.
+            if not ([r["row"] for r in the_results if r["row"] == row_num]):
+                the_row_info = {}
+                the_row_info["row"] = row_num
+                the_row_info["data"] = row_data
+                # add the row to the results.
+                the_results.append(the_row_info)
+
+    if len(the_results) > 0:
+        # Add heads as first row.
+        the_results.insert(0, {"row": 1, "data": the_heads})
+        # sort the results by row number.
+        the_results = sorted(the_results, key=lambda k: k["row"])
+
+    # Result (if any) will be list of dicts, with head row as first item for further processing if needed.
+    # Each dict is of form {'row': <integer>, 'data': [<col1_data>, <col2_data>, etc.]}
+    return the_results
 
 
 def getSheetInfo(sheet):
@@ -146,7 +216,7 @@ def getSheetTabs(sheet):
     return the_tabs
 
 
-def getSheetData(sheet, range):
+def getSheetData(sheet, range, filter_queries=None, filter_regex=True, filter_operator="or"):
     # Return sheet data as list of rows.
     service = googleAuth()
     spreadsheet_id = sheet
@@ -165,10 +235,16 @@ def getSheetData(sheet, range):
             dateTimeRenderOption=date_time_render_option,
         )
     )
-    # the_data = request.execute()
     the_data = execute_request(request)
     if "values" in the_data:
-        return the_data["values"]
+        if filter_queries:
+            the_finds = find_matches(
+                the_data["values"], queries=filter_queries, regex=filter_regex, operator=filter_operator)
+            # Convert find_matches dict output to simple array without heads.
+            the_finds.pop(0)
+            return [row['data'] for row in the_finds]
+        else:
+            return the_data["values"]
     else:
         return []
 
@@ -307,11 +383,13 @@ def sheetLookup(sheet, range, search_str, col_search, col_result):
 
 
 def sheetImportCSV(sheet, range, a_csv, delim=",", quote="NONE"):
-    # Note: will clear contents of sheet range first.
+    # CSV can be a file path or URL. A string beginnging with "http"
+    # will be treated as a URL and be fetched using urllib3.
+    # Otherwise, will look in local file path.
     #  delim (optional): comma by default, can be pipe, colon, etc.
     #  quote (optional): NONE by default. Can be:
     #       ALL, MINIMAL, NONNUMERIC, NONE
-    sheetClear(sheet, range)
+    # Note: will clear contents of sheet range first.
 
     service = googleAuth()
     spreadsheet_id = sheet
@@ -332,9 +410,23 @@ def sheetImportCSV(sheet, range, a_csv, delim=",", quote="NONE"):
 
     data = []
 
-    with open(a_csv) as the_csv_data:
+    if a_csv.startswith('http'):
+        # Read from a URL
+        http = urllib3.PoolManager()
+
+        r = http.request('GET', a_csv, preload_content=False)
+        r.auto_close = False
+        the_csv_data = [l for l in io.TextIOWrapper(r)]
         for row in csv.reader(the_csv_data, "my_dialect"):
             data.append(row)
+    else:
+        # Read from file
+        with open(a_csv) as the_csv_data:
+            for row in csv.reader(the_csv_data, "my_dialect"):
+                data.append(row)
+
+    sheetClear(sheet, range)
+
     # https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
     value_input_option = "USER_ENTERED"
     # https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append#InsertDataOption
@@ -378,6 +470,11 @@ def batchGetByDataFilter(sheet, datafilters):
 
 
 def getMatchingRows(sheet, range, queries, regex=True, operator="or"):
+    the_data = getSheetData(sheet, range)
+    return find_matches(the_data, queries, regex=True, operator="or")
+
+
+def getMatchingRows0(sheet, range, queries, regex=True, operator="or"):
     # Return a list of rows for which at least one queried column matches regex query. Assumes the first row contains heads.
     # Queries are pairs of column heads and matching strings, e.g., [['ID','123'],['Author','Yeats']]. They are regex by default and can be joined by either 'and' or 'or' logic.
 
