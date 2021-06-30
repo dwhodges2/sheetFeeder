@@ -1,8 +1,8 @@
 # sheetFeeder
 _(Formerly googlesheet_tools, GoogleSheetAPITools)_
 
-Basic Python functions for operations on a Google Sheet. See https://developers.google.com/sheets/api/quickstart/python for more setup details. See API documentation: https://developers.google.com/sheets/api/reference/rest.
-This module has been heavily used in Columbia University Libraries' archival data migrations and other activites; a case study involving its use can be found in https://journal.code4lib.org/articles/14871.
+Basic Python functions for interacting with data in Google Sheets. See https://developers.google.com/sheets/api/quickstart/python for more setup details. See API documentation: https://developers.google.com/sheets/api/reference/rest.
+This library has been heavily used in Columbia University Libraries' archival data migrations and other activites; a case study involving its use can be found in https://journal.code4lib.org/articles/14871. If you are using a lot of CSVs or Excel files for your data pipelines, Google Sheets integration may be a worthwhile alternative.
 
 ## Requirements
 
@@ -81,17 +81,24 @@ This library is bundled as an [installable package from pypi.org](https://pypi.o
     In this scenario, you will place the `credentials.json` file from step 2 below in the same working directory as `sheetFeeder.py`.
 
 
-2. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to `sheetFeeder`. 
+2. Obtain API credentials. To begin using the Google Sheets API you need to obtain credentials specific to your Google account and make them available to sheetFeeder.
 
-    - Go to https://developers.google.com/sheets/api/quickstart/python. Make sure you are signed in as the Google identity you want to enable API access for. 
-    - Click "Enable the Google Sheets API" button. Download the API credentials as `credentials.json`.
-    - Place `credentials.json` in the `sheetFeeder` package location as identified in step 1 above (will be different depending on which type of installation you opted for).
+    *Note: Google has significanlty changed the way that API access is enabled, now requiring a more complicated but still very doable process. You now must have a project with API enabled in [Google Cloud Console](https://console.cloud.google.com/). This should be available to any Google Apps user. This is a one-time setup, so don't worry about the details much.*
+
+    *A more detailed walk-through of this process can be found in [the tutorial here](https://github.com/dwhodges2/pugworkshop20210309/blob/master/Instruction/Lesson_1.md).*
+
+    * Follow Google's instructions to [Create a project and enable the API](https://developers.google.com/workspace/guides/create-project). If you already have a project, you can simply select it and edit it to enable the API.
+    * Follow the directions [in the documentation](https://developers.google.com/workspace/guides/create-credentials) to configure the OAuth consent screen for the project and generate an OAuth client ID credential.
+      * You must set up the credentials for a **Desktop** application.
+    * Download the file (API and Services > Credentials) for the Oauth client ID credentials.
+    * **Important:** You must rename the downloaded file as `credentials.json`. 
+    * Place `credentials.json` in the `sheetFeeder` package location as identified in step 1 above (will be different depending on which type of installation you opted for).
 
 3. Authenticate and authorize access to your Google account's API (Quickstart).
-    - Download and run [sample.py](https://github.com/dwhodges2/sheetFeeder/blob/master/sample.py) in your working directory.
-    - The first time you use the API you will be asked to select the Google identity to use (if more than one are detected) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
-    - Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
-    - If successful, a `token.json` file should be created in the same folder as the `credentials.json` file (see step 1 above for location), and a brief readout of sample table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps; you can verify this by running `sample.py` again—you should get the read-out without the authentication steps. 
+    * Download and run [sample.py](https://github.com/dwhodges2/sheetFeeder/blob/master/sample.py) in your working directory.
+    * The first time you use the API you will be asked to select the Google identity to use (if more than one are detected) and to verify access. Note that you may see a warning that the application is not verified by Google. You can go to the "advanced" option and proceed with the "Quickstart" authentication process from there.
+    * Click through to grant read/write permission to your Google Sheets account. If successful you will see a message saying "The authentication flow has completed."
+    8 If successful, a `token.json` file should be created in the same folder as the `credentials.json` file (see step 1 above for location), and a brief readout of sample table data will appear. Once the credentials and token are in place, you be able to access sheets via the API without additional steps; you can verify this by running `sample.py` again—you should get the read-out without the authentication steps. 
 
 ### Reusing and revoking API credentials
 
